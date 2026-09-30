@@ -114,7 +114,7 @@ function DrillConfig({ trail, onBack, onStart }: { trail: string[]; onBack: () =
           {(["Random", "Sequential"] as const).map((o) => <Chip key={o} active={order === o} onClick={() => setOrder(o)}>{o}</Chip>)}
         </Field>
       </div>
-      <div className="sticky bottom-20 mt-4 md:static">
+      <div className="sticky bottom-16 -mx-5 mt-4 bg-background px-5 pb-2 pt-3 md:static md:mx-0 md:px-0">
         <button type="button" onClick={() => onStart({ count: finalCount, minutes: finalMin, difficulty, order })} className="tap w-full rounded-lg bg-primary py-3.5 text-[15px] font-semibold text-primary-foreground shadow-soft">
           Start Drill
         </button>

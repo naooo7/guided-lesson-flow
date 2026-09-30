@@ -7,3 +7,5 @@
 - [x] Add a persistent desktop sidebar without changing page content or mobile navigation.
 
 - [x] Restructure Practice into five clickable modes with compact previews; preserve the original app.
+
+- [x] Practice selection-card architecture: Fundamental subjects, Latihan, Drill config, Try Out packages, Read library.
