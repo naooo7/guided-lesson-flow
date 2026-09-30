@@ -1,5 +1,7 @@
 import { useState, useSyncExternalStore } from "react";
-import { ArrowLeft, Check, ChevronRight, Lock, Trophy, X } from "lucide-react";
+import { ArrowLeft, BookOpen, Calculator, Check, Languages, Lock, Puzzle, Trophy, X } from "lucide-react";
+import type { LucideIcon } from "lucide-react";
+import { CardGrid, SelectCard } from "@/components/practice/select-card";
 
 /* ---------- Mock data (prototype only) ---------- */
 
@@ -136,51 +138,19 @@ export function FundamentalPath() {
   return <Complete subject={subject} index={view.index} score={view.score} onContinue={() => setView({ name: "path", subject: subject.id })} />;
 }
 
-function Entry({ done, onPick }: { done: Record<SubjectId, number>; onPick: (id: SubjectId) => void }) {
-  const [open, setOpen] = useState(false);
-  const overall = Math.round(subjects.reduce((n, s) => n + pct(s, done[s.id]), 0) / subjects.length) - 7;
-  return (
-    <section className="max-w-2xl">
-      <button
-        type="button"
-        onClick={() => setOpen((o) => !o)}
-        aria-expanded={open}
-        className="tap w-full rounded-2xl border border-border bg-card p-5 text-left transition-colors hover:border-border-strong"
-      >
-        <div className="flex items-start justify-between gap-4">
-          <div className="min-w-0">
-            <p className="text-[18px] font-semibold tracking-tight">Fundamental.</p>
-            <p className="mt-1 text-[14px] text-muted-foreground">Build the skills everything else depends on.</p>
-          </div>
-          <ChevronRight size={20} aria-hidden="true" className={`mt-1 shrink-0 text-muted-foreground transition-transform ${open ? "rotate-90" : ""}`} />
-        </div>
-        <div className="mt-5 flex items-center justify-between text-[13px]">
-          <span className="text-muted-foreground">Overall progress</span>
-          <span className="font-semibold tabular-nums">{overall}%</span>
-        </div>
-        <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-muted">
-          <div className="h-full rounded-full bg-primary" style={{ width: `${overall}%` }} />
-        </div>
-      </button>
+const subjectIcons: Record<SubjectId, LucideIcon> = { english: Languages, math: Calculator, indonesia: BookOpen, logic: Puzzle };
+const subjectOrder: SubjectId[] = ["english", "math", "indonesia", "logic"];
 
-      {open && (
-        <div className="mt-4 grid gap-2.5 sm:grid-cols-2">
-          {subjects.map((s) => {
-            const p = pct(s, done[s.id]);
-            return (
-              <button key={s.id} type="button" onClick={() => onPick(s.id)} className="tap flex items-center gap-4 rounded-xl border border-border bg-card p-4 text-left hover:border-border-strong">
-                <ProgressRing value={p} />
-                <div className="min-w-0 flex-1">
-                  <p className="text-[15px] font-semibold">{s.name}</p>
-                  <p className="mt-0.5 truncate text-[12.5px] text-muted-foreground">{s.description}</p>
-                  <p className="mt-1 text-[12px] font-medium text-primary">{p}% complete</p>
-                </div>
-                <ChevronRight size={16} aria-hidden="true" className="shrink-0 text-muted-foreground" />
-              </button>
-            );
-          })}
-        </div>
-      )}
+function Entry({ done, onPick }: { done: Record<SubjectId, number>; onPick: (id: SubjectId) => void }) {
+  return (
+    <section>
+      <h2 className="mb-3 text-[19px] font-semibold tracking-tight">Choose a subject</h2>
+      <CardGrid>
+        {subjectOrder.map((id) => {
+          const s = subjects.find((x) => x.id === id)!;
+          return <SelectCard key={id} title={s.name} description={s.description} icon={subjectIcons[id]} progress={pct(s, done[id])} onClick={() => onPick(id)} />;
+        })}
+      </CardGrid>
     </section>
   );
 }
