@@ -20,7 +20,7 @@ export function SelectCard({
   meta?: string;
   progress?: number;
   locked?: boolean;
-  badge?: string;
+  badge?: string | undefined;
   onClick: () => void;
 }) {
   return (
