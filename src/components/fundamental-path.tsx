@@ -48,21 +48,29 @@ const questionBank: Record<SubjectId, Question[]> = {
     { q: "What is 7 + 8?", options: ["14", "15", "16", "17"], answer: 1, why: "7 + 8 = 15. Split 8 into 3 + 5: 7 + 3 = 10, then 10 + 5 = 15." },
     { q: "What is 6 × 7?", options: ["36", "42", "48", "49"], answer: 1, why: "6 × 7 = 42. Think of 6 × 5 = 30 plus 6 × 2 = 12." },
     { q: "What is 45 − 18?", options: ["27", "23", "33", "37"], answer: 0, why: "45 − 20 = 25, then add back 2: 27." },
+    { q: "What is 56 ÷ 8?", options: ["6", "7", "8", "9"], answer: 1, why: "8 × 7 = 56, so 56 ÷ 8 = 7." },
+    { q: "What is 25% of 80?", options: ["15", "20", "25", "40"], answer: 1, why: "25% is one quarter: 80 ÷ 4 = 20." },
   ],
   english: [
     { q: "Choose the correct sentence.", options: ["She go to school.", "She goes to school.", "She going school.", "She gone to school."], answer: 1, why: "Third-person singular in the present simple takes -s: goes." },
     { q: "Synonym of \"rapid\"?", options: ["Slow", "Quick", "Late", "Weak"], answer: 1, why: "Rapid means fast or quick." },
     { q: "\"I ___ a book yesterday.\"", options: ["read", "reads", "reading", "am read"], answer: 0, why: "Past tense of read is spelled read (pronounced \"red\")." },
+    { q: "Opposite of \"ancient\"?", options: ["Old", "Modern", "Huge", "Quiet"], answer: 1, why: "Ancient means very old; modern is its opposite." },
+    { q: "\"The keys are ___ the table.\"", options: ["in", "on", "at", "to"], answer: 1, why: "Objects resting on a surface use on." },
   ],
   indonesia: [
     { q: "Manakah kata baku?", options: ["Apotik", "Apotek", "Apotiek", "Apothek"], answer: 1, why: "Menurut KBBI, bentuk baku adalah apotek." },
     { q: "Penulisan yang benar?", options: ["di rumah", "dirumah", "di-rumah", "Dirumah"], answer: 0, why: "\"di\" sebagai kata depan ditulis terpisah dari kata tempat." },
     { q: "Subjek dari \"Adik membaca buku\"?", options: ["Membaca", "Buku", "Adik", "Membaca buku"], answer: 2, why: "Subjek adalah pelaku: Adik." },
+    { q: "Kata baku yang benar?", options: ["Resiko", "Risiko", "Resico", "Risico"], answer: 1, why: "KBBI menetapkan bentuk baku risiko." },
+    { q: "Antonim \"rajin\"?", options: ["Tekun", "Malas", "Giat", "Cepat"], answer: 1, why: "Lawan kata rajin adalah malas." },
   ],
   logic: [
     { q: "2, 4, 8, 16, …", options: ["18", "24", "32", "30"], answer: 2, why: "Each number doubles: 16 × 2 = 32." },
     { q: "Which does not belong?", options: ["Apple", "Banana", "Carrot", "Mango"], answer: 2, why: "Carrot is a vegetable; the others are fruits." },
     { q: "Bird : Fly = Fish : ?", options: ["Water", "Swim", "Fin", "Sea"], answer: 1, why: "A bird flies; a fish swims — the relationship is movement." },
+    { q: "3, 6, 9, 12, …", options: ["14", "15", "16", "18"], answer: 1, why: "Add 3 each time: 12 + 3 = 15." },
+    { q: "Doctor : Hospital = Teacher : ?", options: ["Book", "School", "Student", "Class"], answer: 1, why: "A doctor works in a hospital; a teacher works in a school." },
   ],
 };
 
@@ -103,7 +111,7 @@ type View =
   | { name: "entry" }
   | { name: "path"; subject: SubjectId }
   | { name: "lesson"; subject: SubjectId; index: number }
-  | { name: "done"; subject: SubjectId; index: number };
+  | { name: "done"; subject: SubjectId; index: number; score: number };
 
 export function FundamentalPath() {
   const [view, setView] = useState<View>({ name: "entry" });
@@ -119,13 +127,13 @@ export function FundamentalPath() {
         subject={subject}
         index={view.index}
         onExit={() => setView({ name: "path", subject: subject.id })}
-        onFinish={() => {
+        onFinish={(score) => {
           store.complete(subject.id, view.index);
-          setView({ name: "done", subject: subject.id, index: view.index });
+          setView({ name: "done", subject: subject.id, index: view.index, score });
         }}
       />
     );
-  return <Complete subject={subject} index={view.index} onContinue={() => setView({ name: "path", subject: subject.id })} />;
+  return <Complete subject={subject} index={view.index} score={view.score} onContinue={() => setView({ name: "path", subject: subject.id })} />;
 }
 
 function Entry({ done, onPick }: { done: Record<SubjectId, number>; onPick: (id: SubjectId) => void }) {
@@ -268,81 +276,126 @@ function Node({ state, final, label, letter, onClick }: { state: "done" | "curre
   );
 }
 
-function Lesson({ subject, index, onExit, onFinish }: { subject: Subject; index: number; onExit: () => void; onFinish: () => void }) {
-  const questions = questionBank[subject.id];
+function Lesson({ subject, index, onExit, onFinish }: { subject: Subject; index: number; onExit: () => void; onFinish: (score: number) => void }) {
+  const bank = questionBank[subject.id];
+  const questions = bank.map((_, i) => bank[(i + index) % bank.length]!);
   const [step, setStep] = useState(0);
   const [picked, setPicked] = useState<number | null>(null);
+  const [score, setScore] = useState(0);
   const loc = locate(subject, index);
   const lessonName = subject.levels[loc.level]!.lessons[loc.pos];
+  const isFinal = lessonName === FINAL;
   const q = questions[step]!;
   const answered = picked !== null;
   const correct = picked === q.answer;
+  const last = step === questions.length - 1;
 
+  const pick = (i: number) => {
+    if (answered) return;
+    setPicked(i);
+    if (i === q.answer) setScore((n) => n + 1);
+  };
   const next = () => {
-    if (!correct) return setPicked(null);
-    if (step === questions.length - 1) return onFinish();
+    if (last) return onFinish(score);
     setStep(step + 1);
     setPicked(null);
   };
 
   return (
-    <section className="mx-auto max-w-xl">
-      <div className="mb-6 flex items-center gap-3">
-        <button type="button" onClick={onExit} aria-label="Keluar dari pelajaran" className="tap grid h-9 w-9 place-items-center rounded-full text-muted-foreground hover:bg-muted">
-          <X size={18} />
+    <section className="mx-auto flex min-h-[calc(100dvh-10rem)] max-w-xl flex-col pb-28 md:min-h-0 md:pb-0">
+      <div className="flex items-center gap-3">
+        <button type="button" onClick={onExit} aria-label="Keluar dari pelajaran" className="tap grid h-10 w-10 shrink-0 place-items-center rounded-full text-muted-foreground hover:bg-muted">
+          <X size={20} />
         </button>
-        <div className="flex flex-1 gap-1.5" aria-label={`Soal ${step + 1} dari ${questions.length}`}>
-          {questions.map((_, i) => (
-            <span key={i} className={`h-2 flex-1 rounded-full ${i < step || (i === step && answered && correct) ? "bg-primary" : "bg-muted"}`} />
-          ))}
+        <div className="h-2.5 flex-1 overflow-hidden rounded-full bg-muted" role="progressbar" aria-valuemin={0} aria-valuemax={questions.length} aria-valuenow={step + (answered ? 1 : 0)}>
+          <div className={`h-full rounded-full transition-all duration-300 ${isFinal ? "bg-warm" : "bg-primary"}`} style={{ width: `${((step + (answered ? 1 : 0)) / questions.length) * 100}%` }} />
         </div>
+        <span className="shrink-0 text-[13px] font-semibold tabular-nums text-muted-foreground">{step + 1}/{questions.length}</span>
       </div>
-      <p className="label-xs">{subject.name}</p>
-      <p className="mt-1 text-[14px] text-muted-foreground">{subject.levels[loc.level]!.name} — {lessonName}</p>
-      <h2 className="mt-6 text-[22px] font-semibold tracking-tight">{q.q}</h2>
+
+      <div className="mt-5 flex items-center gap-2">
+        {isFinal && <Trophy size={16} className="text-warm" aria-hidden="true" />}
+        <p className="label-xs">{subject.name} · {subject.levels[loc.level]!.name}</p>
+      </div>
+      <p className="mt-1 text-[15px] font-semibold">{isFinal ? `${subject.levels[loc.level]!.name} Final Challenge` : lessonName}</p>
+
+      <h2 className="mt-6 text-[22px] font-semibold leading-snug tracking-tight">{q.q}</h2>
       <div className="mt-5 grid gap-2.5 sm:grid-cols-2">
         {q.options.map((o, i) => {
-          const tone = !answered ? "border-border hover:border-border-strong" : i === q.answer ? "border-success bg-success/10" : i === picked ? "border-destructive bg-destructive/10" : "border-border opacity-60";
+          const tone = !answered
+            ? "border-border hover:border-border-strong active:scale-[0.98]"
+            : i === q.answer
+              ? "border-success bg-success/10 text-success"
+              : i === picked
+                ? "border-destructive bg-destructive/10 text-destructive"
+                : "border-border opacity-50";
           return (
-            <button key={o} type="button" disabled={answered} onClick={() => setPicked(i)} className={`tap rounded-xl border-2 bg-card px-4 py-3.5 text-left text-[15px] font-medium ${tone}`}>
-              {o}
+            <button key={o} type="button" disabled={answered} onClick={() => pick(i)} className={`tap flex min-h-14 items-center justify-between gap-3 rounded-xl border-2 bg-card px-4 py-3.5 text-left text-[16px] font-medium transition ${tone}`}>
+              <span>{o}</span>
+              {answered && i === q.answer && <Check size={18} strokeWidth={3} aria-hidden="true" />}
+              {answered && i === picked && i !== q.answer && <X size={18} strokeWidth={3} aria-hidden="true" />}
             </button>
           );
         })}
       </div>
+
       {answered && (
-        <div className={`mt-5 rounded-xl p-4 ${correct ? "bg-success/10" : "bg-destructive/10"}`}>
-          <p className={`text-[15px] font-semibold ${correct ? "text-success" : "text-destructive"}`}>{correct ? "Benar!" : "Belum tepat"}</p>
-          <p className="mt-1 text-[14px] leading-6 text-muted-foreground">{q.why}</p>
-          <button type="button" onClick={next} className="tap mt-4 w-full rounded-xl bg-primary py-3 text-[15px] font-semibold text-primary-foreground sm:w-auto sm:px-8">
-            {!correct ? "Coba lagi" : step === questions.length - 1 ? "Selesai" : "Lanjut"}
-          </button>
+        <div
+          role="status"
+          className={`fixed inset-x-0 bottom-16 z-20 border-t-2 p-4 md:static md:mt-6 md:rounded-xl md:border-2 ${correct ? "border-success bg-card" : "border-destructive bg-card"}`}
+        >
+          <div className="mx-auto max-w-xl">
+            <p className={`flex items-center gap-2 text-[16px] font-bold ${correct ? "text-success" : "text-destructive"}`}>
+              {correct ? <Check size={18} strokeWidth={3} /> : <X size={18} strokeWidth={3} />}
+              {correct ? "Benar!" : "Belum tepat"}
+            </p>
+            {!correct && (
+              <p className="mt-1 text-[14px]">
+                Jawaban benar: <span className="font-semibold">{q.options[q.answer]}</span>
+              </p>
+            )}
+            <p className="mt-1 text-[14px] leading-6 text-muted-foreground">{q.why}</p>
+            <button type="button" onClick={next} autoFocus className={`tap mt-3 w-full rounded-xl py-3.5 text-[15px] font-semibold md:w-auto md:px-10 ${correct ? "bg-success text-success-foreground" : "bg-primary text-primary-foreground"}`}>
+              {last ? "Lihat hasil" : "Lanjut"}
+            </button>
+          </div>
         </div>
       )}
     </section>
   );
 }
 
-function Complete({ subject, index, onContinue }: { subject: Subject; index: number; onContinue: () => void }) {
+function Complete({ subject, index, score, onContinue }: { subject: Subject; index: number; score: number; onContinue: () => void }) {
   const loc = locate(subject, index);
   const level = subject.levels[loc.level]!;
   const name = level.lessons[loc.pos];
+  const isFinal = name === FINAL;
+  const total = questionBank[subject.id].length;
   const hasNext = index + 1 < totalLessons(subject);
-  const nextName = hasNext ? (() => { const n = locate(subject, index + 1); return subject.levels[n.level]!.lessons[n.pos]; })() : null;
+  const nextName = hasNext ? (() => { const n = locate(subject, index + 1); const l = subject.levels[n.level]!; return l.lessons[n.pos] === FINAL ? `${l.name} ${FINAL}` : l.lessons[n.pos]; })() : null;
   return (
     <section className="mx-auto max-w-md py-8 text-center">
-      <div className="mx-auto grid h-16 w-16 place-items-center rounded-full bg-success text-success-foreground">
-        <Check size={30} strokeWidth={3} aria-hidden="true" />
+      <div className={`mx-auto grid h-20 w-20 place-items-center rounded-full ${isFinal ? "bg-warm text-warm-foreground ring-8 ring-warm-soft" : "bg-success text-success-foreground ring-8 ring-success/15"}`}>
+        {isFinal ? <Trophy size={34} aria-hidden="true" /> : <Check size={34} strokeWidth={3} aria-hidden="true" />}
       </div>
-      <h2 className="mt-5 text-[24px] font-semibold tracking-tight">Lesson Complete</h2>
-      <p className="mt-1 text-[15px] text-muted-foreground">✓ {name}</p>
-      <p className="mt-4 text-[13px] font-medium tabular-nums">{level.name} · {Math.min(loc.pos + 1, 4)} / 4{name === FINAL ? " · level selesai" : ""}</p>
+      <h2 className="mt-6 text-[24px] font-semibold tracking-tight">{isFinal ? `${level.name} complete!` : "Lesson complete"}</h2>
+      <p className="mt-1 text-[15px] text-muted-foreground">{subject.name} · {isFinal ? "Final Challenge" : name}</p>
+      <div className="mt-6 grid grid-cols-2 gap-3">
+        <div className="rounded-xl border border-border bg-card p-4">
+          <p className="label-xs">Benar</p>
+          <p className="mt-1 text-[24px] font-bold tabular-nums">{score}/{total}</p>
+        </div>
+        <div className="rounded-xl border border-border bg-card p-4">
+          <p className="label-xs">Akurasi</p>
+          <p className="mt-1 text-[24px] font-bold tabular-nums">{Math.round((score / total) * 100)}%</p>
+        </div>
+      </div>
       {nextName && (
-        <p className="mt-5 rounded-xl border border-border bg-card px-4 py-3 text-[14px]">
-          Next lesson unlocked: <span className="font-semibold">{nextName}</span>
+        <p className="mt-4 rounded-xl border border-border bg-card px-4 py-3 text-[14px]">
+          Unlocked: <span className="font-semibold">{nextName}</span>
         </p>
       )}
-      <button type="button" onClick={onContinue} className="tap mt-6 w-full rounded-xl bg-primary py-3 text-[15px] font-semibold text-primary-foreground">
+      <button type="button" onClick={onContinue} className="tap mt-6 w-full rounded-xl bg-primary py-3.5 text-[15px] font-semibold text-primary-foreground">
         Continue
       </button>
     </section>
