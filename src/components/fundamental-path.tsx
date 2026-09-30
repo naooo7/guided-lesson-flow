@@ -342,7 +342,7 @@ function Lesson({ subject, index, onExit, onFinish }: { subject: Subject; index:
       {answered && (
         <div
           role="status"
-          className={`fixed inset-x-0 bottom-16 z-20 border-t-2 p-4 md:static md:mt-6 md:rounded-xl md:border-2 ${correct ? "border-success bg-card" : "border-destructive bg-card"}`}
+          className={`fixed inset-x-0 bottom-16 z-30 mx-auto max-w-[430px] border-t-2 p-4 md:static md:mx-0 md:max-w-none md:mt-6 md:rounded-xl md:border-2 ${correct ? "border-success bg-card" : "border-destructive bg-card"}`}
         >
           <div className="mx-auto max-w-xl">
             <p className={`flex items-center gap-2 text-[16px] font-bold ${correct ? "text-success" : "text-destructive"}`}>
@@ -375,7 +375,7 @@ function Complete({ subject, index, score, onContinue }: { subject: Subject; ind
   const nextName = hasNext ? (() => { const n = locate(subject, index + 1); const l = subject.levels[n.level]!; return l.lessons[n.pos] === FINAL ? `${l.name} ${FINAL}` : l.lessons[n.pos]; })() : null;
   return (
     <section className="mx-auto max-w-md py-8 text-center">
-      <div className={`mx-auto grid h-20 w-20 place-items-center rounded-full ${isFinal ? "bg-warm text-warm-foreground ring-8 ring-warm-soft" : "bg-success text-success-foreground ring-8 ring-success/15"}`}>
+      <div className={`mx-auto grid h-20 w-20 place-items-center rounded-full ${isFinal ? "bg-warm text-foreground ring-8 ring-warm-soft" : "bg-success text-success-foreground ring-8 ring-success/15"}`}>
         {isFinal ? <Trophy size={34} aria-hidden="true" /> : <Check size={34} strokeWidth={3} aria-hidden="true" />}
       </div>
       <h2 className="mt-6 text-[24px] font-semibold tracking-tight">{isFinal ? `${level.name} complete!` : "Lesson complete"}</h2>
