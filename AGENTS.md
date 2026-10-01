@@ -12,3 +12,4 @@
 - Restore the linked Fundamental. source as the app baseline because this workspace began as the blank template; preserve its shell and unrelated pages.
 - Keep Practice modes as mock-only route screens inside the existing Screen shell so old exam paths and sessions remain available.
 - Reuse the existing DesktopSidebar in the guided session view; it preserves the desktop shell without adding mobile bottom navigation to focused questions.
+- Keep feedback timing in the existing mode runners: Drill reveals after submission, while Latihan Soal records each answer and advances silently until the shared Result view.
