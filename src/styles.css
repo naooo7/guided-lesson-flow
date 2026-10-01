@@ -76,6 +76,7 @@
   --shadow-soft: 0 1px 2px oklch(0.2 0.01 260 / 0.05);
   --warm: oklch(0.74 0.16 60);
   --warm-soft: oklch(0.95 0.04 75);
+  --result-warning: oklch(0.57 0.13 90);
   --primary-soft: oklch(0.94 0.025 245);
   --shadow-raised: 0 8px 24px -12px oklch(0.2 0.01 260 / 0.22);
 }
@@ -153,6 +154,7 @@
   --shadow-soft: 0 1px 2px oklch(0 0 0 / 0.3);
   --warm: oklch(0.78 0.15 60);
   --warm-soft: oklch(0.32 0.05 60);
+  --result-warning: oklch(0.82 0.14 90);
   --primary-soft: oklch(0.3 0.04 245);
   --shadow-raised: 0 8px 24px -12px oklch(0 0 0 / 0.5);
 }
@@ -160,18 +162,18 @@
 /* Result-only score states, derived from the existing semantic palette. */
 .result-panel--low {
   color: var(--destructive);
-  border-color: color-mix(in oklch, var(--destructive) 30%, var(--border));
-  background: linear-gradient(155deg, color-mix(in oklch, var(--destructive) 18%, var(--surface)), color-mix(in oklch, var(--destructive) 5%, var(--surface)));
+  border-color: color-mix(in srgb, var(--destructive) 30%, var(--border));
+  background: linear-gradient(155deg, color-mix(in srgb, var(--destructive) 16%, var(--surface)), color-mix(in srgb, var(--destructive) 4%, var(--surface)));
 }
 .result-panel--mid {
-  color: var(--warm);
-  border-color: color-mix(in oklch, var(--warm) 38%, var(--border));
-  background: linear-gradient(155deg, color-mix(in oklch, var(--warm) 25%, var(--surface)), color-mix(in oklch, var(--warm) 6%, var(--surface)));
+  color: var(--result-warning);
+  border-color: color-mix(in srgb, var(--result-warning) 38%, var(--border));
+  background: linear-gradient(155deg, color-mix(in srgb, var(--result-warning) 21%, var(--surface)), color-mix(in srgb, var(--result-warning) 5%, var(--surface)));
 }
 .result-panel--high {
   color: var(--success);
-  border-color: color-mix(in oklch, var(--success) 30%, var(--border));
-  background: linear-gradient(155deg, color-mix(in oklch, var(--success) 19%, var(--surface)), color-mix(in oklch, var(--success) 5%, var(--surface)));
+  border-color: color-mix(in srgb, var(--success) 30%, var(--border));
+  background: linear-gradient(155deg, color-mix(in srgb, var(--success) 17%, var(--surface)), color-mix(in srgb, var(--success) 4%, var(--surface)));
 }
 
 @layer base {
