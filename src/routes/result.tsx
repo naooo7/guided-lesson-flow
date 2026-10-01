@@ -26,11 +26,9 @@ export const Route = createFileRoute("/result")({
 });
 
 function performanceSummary(pct: number, total: number) {
-  if (!total) return { title: "Session complete", body: "Your results are ready for review." };
-  if (pct >= 90) return { title: "Excellent command", body: "You were precise throughout this set. Keep the momentum going." };
-  if (pct >= 75) return { title: "Strong progress", body: "Your foundation is solid. A quick review will close the remaining gaps." };
-  if (pct >= 50) return { title: "Building steadily", body: "You have the core ideas. Review the misses before your next round." };
-  return { title: "Good first pass", body: "Use the review to understand each miss, then try another focused set." };
+  if (!total || pct <= 50) return { title: "Needs more review", body: "Review your mistakes, then try another focused set.", tone: "low" as const };
+  if (pct <= 70) return { title: "Keep practicing", body: "Review the questions you missed to strengthen your understanding.", tone: "mid" as const };
+  return { title: "Good progress", body: "You are building a strong foundation. Keep the momentum going!", tone: "high" as const };
 }
 
 function ResultScreen() {
@@ -51,53 +49,45 @@ function ResultScreen() {
 
   return (
     <div className="min-h-screen bg-background">
-      <main className="screen-in mx-auto w-full max-w-[760px] px-5 pb-10 pt-8 sm:px-8 sm:pt-12">
+      <main className="screen-in mx-auto w-full max-w-[560px] px-5 pb-10 pt-7 sm:px-8 sm:pt-12">
         <header className="text-center">
-          <p className="label-xs">Session complete</p>
-          <p className="mt-2 text-[15px] text-muted-foreground">{session?.materialName ?? search.material}</p>
+          <p className="text-[15px] font-bold text-primary">Fundamental.</p>
+          <div className="mt-6 inline-flex items-center gap-2 rounded-full border border-success/30 bg-success/10 px-3 py-1.5 text-[12px] font-semibold text-success">
+            <Check size={14} aria-hidden="true" /> Completed
+          </div>
+          <h1 className="mt-3 text-[24px] font-semibold">Session complete</h1>
+          <p className="mt-1 text-[14px] text-muted-foreground">{session?.materialName ?? search.material}</p>
         </header>
 
-        <section className="relative mx-auto mt-6 max-w-[520px] overflow-hidden rounded-2xl border border-border bg-surface px-5 py-6 text-center shadow-raised sm:px-8 sm:py-8">
-          <div className="absolute inset-x-0 top-0 h-1 bg-primary/80" aria-hidden="true" />
-          <p className="text-[13px] font-medium text-muted-foreground">Your score</p>
-          <div className="mt-2 flex items-end justify-center gap-2">
-            <span className="tabular text-[58px] font-semibold leading-none tracking-[-0.04em]">{correct}</span>
-            <span className="tabular mb-1 text-[22px] text-muted-foreground">/ {total}</span>
-          </div>
-          <div className="mx-auto mt-5 max-w-[340px]">
-            <div className="mb-2 flex items-center justify-between text-[12px]">
-              <span className="font-medium text-foreground">Accuracy</span>
-              <span className="tabular font-semibold text-primary">{pct}%</span>
-            </div>
-            <div className="h-2 overflow-hidden rounded-full bg-muted" role="progressbar" aria-label="Accuracy" aria-valuemin={0} aria-valuemax={100} aria-valuenow={pct}>
-              <div className="h-full rounded-full bg-primary transition-[width] duration-700" style={{ width: `${pct}%` }} />
+        <section className={`result-panel result-panel--${summary.tone} mt-6 rounded-xl border px-5 py-6 text-center sm:px-8 sm:py-8`} aria-label="Session score">
+          <div className="relative mx-auto grid size-40 place-items-center">
+            <svg viewBox="0 0 160 160" className="absolute inset-0 size-full -rotate-90" aria-hidden="true">
+              <circle cx="80" cy="80" r="69" fill="none" stroke="currentColor" strokeWidth="10" className="opacity-20" />
+              <circle cx="80" cy="80" r="69" fill="none" stroke="currentColor" strokeWidth="10" strokeLinecap="round" pathLength="100" strokeDasharray={`${pct} 100`} className="transition-all duration-700" />
+            </svg>
+            <div className="flex flex-col items-center">
+              <span className="tabular text-[40px] font-bold leading-none">{correct}<span className="text-[21px] font-medium opacity-70">/{total}</span></span>
+              <span className="mt-1 text-[12px] font-semibold uppercase">Your score</span>
             </div>
           </div>
+          <p className="mt-5 text-[20px] font-semibold">{summary.title}</p>
+          <p className="mx-auto mt-1 max-w-[340px] text-[13px] leading-relaxed text-foreground/80">{summary.body}</p>
         </section>
 
-        <section aria-label="Session statistics" className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-4">
+        <section aria-label="Session statistics" className="mt-4 grid grid-cols-2 gap-3">
+          <ResultStat icon={Check} label="Accuracy" value={`${pct}%`} tone="success" />
           <ResultStat icon={Check} label="Correct" value={String(correct)} tone="success" />
           <ResultStat icon={X} label="Incorrect" value={String(incorrect)} tone="destructive" />
           <ResultStat icon={Clock3} label="Time" value={data ? formatDuration(time) : "—"} />
-          <ResultStat icon={RotateCcw} label="Review" value={`${incorrect} ${incorrect === 1 ? "question" : "questions"}`} />
+          <ResultStat icon={RotateCcw} label="Needs Review" value={`${incorrect} ${incorrect === 1 ? "question" : "questions"}`} />
         </section>
 
-        <section className="mt-4 border-y border-border py-5 sm:flex sm:items-center sm:justify-between sm:gap-8">
-          <div>
-            <p className="text-[16px] font-semibold">{summary.title}</p>
-            <p className="mt-1 max-w-[480px] text-[14px] leading-relaxed text-muted-foreground">{summary.body}</p>
-          </div>
-          <span className="tabular mt-3 inline-flex shrink-0 items-center rounded-full bg-primary-soft px-3 py-1.5 text-[12px] font-semibold text-primary sm:mt-0">
-            {correct} of {total} correct
-          </span>
-        </section>
-
-        <div className="mt-6 grid gap-2.5 sm:grid-cols-2">
+        <div className="mt-6 grid gap-2.5">
           <Button asChild size="block">
-            <Link to="/review">Review answers <ArrowRight className="size-4" /></Link>
+            <Link to="/review">Review Mistakes <ArrowRight className="size-4" /></Link>
           </Button>
           <Button asChild size="block" variant="outline">
-            <Link to="/practice">Continue practice <ArrowRight className="size-4" /></Link>
+            <Link to="/practice">Done</Link>
           </Button>
         </div>
       </main>
@@ -115,12 +105,12 @@ type ResultStatProps = {
 function ResultStat({ icon: Icon, label, value, tone }: ResultStatProps) {
   const toneClass = tone === "success" ? "bg-success/[0.1] text-success" : tone === "destructive" ? "bg-destructive/[0.09] text-destructive" : "bg-primary-soft text-primary";
   return (
-    <div className="rounded-xl border border-border bg-surface p-3.5 shadow-soft">
+    <div className="min-w-0 rounded-lg border border-border bg-surface p-3.5 shadow-soft">
       <span className={`flex size-8 items-center justify-center rounded-lg ${toneClass}`}>
         <Icon className="size-4" strokeWidth={2} />
       </span>
-      <p className="tabular mt-3 truncate text-[17px] font-semibold">{value}</p>
-      <p className="mt-0.5 text-[12px] text-muted-foreground">{label}</p>
+      <p className="mt-3 text-[12px] text-muted-foreground">{label}</p>
+      <p className="tabular mt-0.5 break-words text-[18px] font-semibold leading-tight">{value}</p>
     </div>
   );
 }

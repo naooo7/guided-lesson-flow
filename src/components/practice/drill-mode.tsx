@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { Check, Clock, X } from "lucide-react";
 import { exams, getQuestions, type Question } from "@/data/prototype";
 import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
 import { CardGrid, Chip, SelectCard, StepHeader, fmtTime } from "./select-card";
 
 type Difficulty = "Easy" | "Medium" | "Hard" | "Mixed";

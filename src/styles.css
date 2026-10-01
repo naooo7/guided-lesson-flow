@@ -157,6 +157,23 @@
   --shadow-raised: 0 8px 24px -12px oklch(0 0 0 / 0.5);
 }
 
+/* Result-only score states, derived from the existing semantic palette. */
+.result-panel--low {
+  color: var(--destructive);
+  border-color: color-mix(in oklch, var(--destructive) 30%, var(--border));
+  background: linear-gradient(155deg, color-mix(in oklch, var(--destructive) 18%, var(--surface)), color-mix(in oklch, var(--destructive) 5%, var(--surface)));
+}
+.result-panel--mid {
+  color: var(--warm);
+  border-color: color-mix(in oklch, var(--warm) 38%, var(--border));
+  background: linear-gradient(155deg, color-mix(in oklch, var(--warm) 25%, var(--surface)), color-mix(in oklch, var(--warm) 6%, var(--surface)));
+}
+.result-panel--high {
+  color: var(--success);
+  border-color: color-mix(in oklch, var(--success) 30%, var(--border));
+  background: linear-gradient(155deg, color-mix(in oklch, var(--success) 19%, var(--surface)), color-mix(in oklch, var(--success) 5%, var(--surface)));
+}
+
 @layer base {
   * {
     border-color: var(--color-border);
