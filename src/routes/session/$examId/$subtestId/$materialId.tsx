@@ -3,6 +3,7 @@ import { useEffect, useRef, useState } from "react";
 import { ArrowLeft, Check, Clock3, X } from "lucide-react";
 import { endSession, recordAttempt, startSession } from "@/lib/activity";
 import { Button } from "@/components/ui/button";
+import { DesktopSidebar } from "@/components/app-shell";
 import { findExam, findMaterial, findSubtest, getQuestions } from "@/data/prototype";
 import { cn } from "@/lib/utils";
 
@@ -61,7 +62,7 @@ function SessionScreen() {
   const time = `${String(Math.floor(elapsed / 60)).padStart(2, "0")}:${String(elapsed % 60).padStart(2, "0")}`;
 
   function submit() {
-    if (!selected || revealed || !sessionId.current) return;
+    if (!q || !selected || revealed || !sessionId.current) return;
     const correct = selected === q.answer;
     if (correct) setCorrectCount((c) => c + 1);
     recordAttempt({
@@ -105,6 +106,8 @@ function SessionScreen() {
 
   return (
     <div className="min-h-screen bg-background">
+      <DesktopSidebar />
+      <div className="md:pl-56">
       <div className="mx-auto flex min-h-screen w-full max-w-[480px] flex-col px-5 pt-4 sm:px-6">
         <header className="grid grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-center gap-3 py-1">
           <Link
@@ -205,6 +208,7 @@ function SessionScreen() {
             </Button>
           )}
         </div>
+      </div>
       </div>
     </div>
   );
