@@ -9,4 +9,4 @@
 - [x] Restructure Practice into five clickable modes with compact previews; preserve the original app.
 
 - [x] Practice selection-card architecture: Fundamental subjects, Latihan, Drill config, Try Out packages, Read library.
-- [ ] Refine the existing session question and explanation views; verify mobile and desktop answer flow.
+- [x] Refine the existing session question and explanation views; verify mobile and desktop answer flow.
