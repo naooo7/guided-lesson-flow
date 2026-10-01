@@ -59,12 +59,14 @@ function SessionScreen() {
   const isCorrect = selected === q.answer;
   const last = index === questions.length - 1;
   const correctChoice = q.choices.find((choice) => choice.key === q.answer);
+  const showFeedback = mode !== "latihan";
   const time = `${String(Math.floor(elapsed / 60)).padStart(2, "0")}:${String(elapsed % 60).padStart(2, "0")}`;
 
   function submit() {
     if (!q || !selected || revealed || !sessionId.current) return;
     const correct = selected === q.answer;
-    if (correct) setCorrectCount((c) => c + 1);
+    const nextCorrect = correctCount + (correct ? 1 : 0);
+    if (correct) setCorrectCount(nextCorrect);
     recordAttempt({
       sessionId: sessionId.current,
       examId,
@@ -77,17 +79,21 @@ function SessionScreen() {
       // cap idle time per question at 10 min
       durationMs: Math.min(Date.now() - questionStart.current, 10 * 60_000),
     });
+    if (!showFeedback) {
+      advance(nextCorrect);
+      return;
+    }
     setRevealed(true);
     window.scrollTo({ top: 0, behavior: "instant" });
   }
 
-  function next() {
+  function advance(score: number) {
     if (last) {
       if (sessionId.current) endSession(sessionId.current);
       navigate({
         to: "/result",
         search: {
-          correct: correctCount,
+          correct: score,
           total: questions.length,
           material: material!.name,
           examId,
@@ -102,6 +108,10 @@ function SessionScreen() {
     setRevealed(false);
     questionStart.current = Date.now();
     window.scrollTo({ top: 0, behavior: "instant" });
+  }
+
+  function next() {
+    advance(correctCount);
   }
 
   return (

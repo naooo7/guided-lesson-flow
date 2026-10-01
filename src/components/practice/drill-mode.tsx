@@ -222,11 +222,14 @@ function DrillRunner({ config, trail, onExit, onDone }: { config: Config; trail:
         })}
       </div>
       {answered && (
-        <div className="mt-4">
+        <div className="mt-4" role="status">
+          <p className={cn("flex items-center gap-2 text-[14px] font-semibold", picked === q.answer ? "text-success" : "text-destructive")}>
+            {picked === q.answer ? <Check size={18} aria-hidden="true" /> : <X size={18} aria-hidden="true" />}
+            {picked === q.answer ? "Benar" : "Belum tepat"}
+          </p>
+          {picked !== q.answer && <p className="mt-2 text-[13.5px] font-medium">Jawaban benar: {q.answer}. {q.choices.find((choice) => choice.key === q.answer)?.text}</p>}
           <p className="text-[13.5px] leading-6 text-muted-foreground">{q.explanation.why}</p>
-          <button type="button" onClick={next} className="tap mt-3 w-full rounded-lg bg-primary py-3.5 text-[15px] font-semibold text-primary-foreground">
-            {i === questions.length - 1 ? "Selesai" : "Lanjut"}
-          </button>
+          <Button size="block" onClick={next} className="mt-3">{i === questions.length - 1 ? "Selesai" : "Continue"}</Button>
         </div>
       )}
     </div>
