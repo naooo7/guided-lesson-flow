@@ -10,5 +10,5 @@
 
 - [x] Practice selection-card architecture: Fundamental subjects, Latihan, Drill config, Try Out packages, Read library.
 - [x] Refine the existing session question and explanation views; verify mobile and desktop answer flow.
-- [ ] Refine the existing Result screen with score-based status and preserve its data/actions.
-- [ ] Keep instant feedback in Drill, and delay Latihan Soal feedback until results.
+- [x] Refine the existing Result screen with score-based status and preserve its data/actions.
+- [x] Keep instant feedback in Drill, and delay Latihan Soal feedback until results.
