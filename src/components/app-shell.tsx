@@ -10,7 +10,7 @@ const tabs = [
   { to: "/profile", label: "Profile", icon: User },
 ] as const;
 
-function DesktopSidebar() {
+export function DesktopSidebar() {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
 
   return (
