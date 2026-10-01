@@ -152,6 +152,7 @@ function DrillRunner({ config, trail, onExit, onDone }: { config: Config; trail:
   const questions = useMemo(() => buildSet(config), [config]);
   const [i, setI] = useState(0);
   const [picked, setPicked] = useState<string | null>(null);
+  const [submitted, setSubmitted] = useState(false);
   const [correct, setCorrect] = useState(0);
   const [elapsed, setElapsed] = useState(0);
   const limit = config.minutes ? config.minutes * 60 : null;
@@ -175,19 +176,24 @@ function DrillRunner({ config, trail, onExit, onDone }: { config: Config; trail:
   }, [elapsed]);
 
   const q = questions[i]!;
-  const answered = picked !== null;
+  const answered = submitted;
   const remaining = questions.length - i - (answered ? 1 : 0);
 
   const pick = (k: string) => {
     if (answered) return;
     setPicked(k);
+  };
+  const submit = () => {
+    if (!picked || submitted) return;
+    setSubmitted(true);
     state.current.answered = i + 1;
-    if (k === q.answer) setCorrect((c) => c + 1);
+    if (picked === q.answer) setCorrect((c) => c + 1);
   };
   const next = () => {
     if (i === questions.length - 1) return finish(i + 1);
     setI(i + 1);
     setPicked(null);
+    setSubmitted(false);
   };
 
   return (
@@ -212,16 +218,17 @@ function DrillRunner({ config, trail, onExit, onDone }: { config: Config; trail:
       <p className="text-[17px] font-medium leading-7">{q.prompt}</p>
       <div className="mt-5 space-y-2">
         {q.choices.map((c) => {
-          const tone = !answered ? "border-border hover:border-border-strong" : c.key === q.answer ? "border-success bg-success/10" : c.key === picked ? "border-destructive bg-destructive/10" : "border-border opacity-50";
+          const tone = !answered ? c.key === picked ? "border-primary bg-primary-soft" : "border-border hover:border-border-strong" : c.key === q.answer ? "border-success bg-success/10" : c.key === picked ? "border-destructive bg-destructive/10" : "border-border opacity-50";
           return (
-            <button key={c.key} type="button" disabled={answered} onClick={() => pick(c.key)} className={cn("tap flex min-h-12 w-full items-center gap-3 rounded-lg border-2 bg-surface px-4 py-3 text-left text-[15px]", tone)}>
+            <Button key={c.key} type="button" variant="outline" disabled={answered} aria-pressed={picked === c.key} onClick={() => pick(c.key)} className={cn("flex min-h-12 h-auto w-full items-center justify-start gap-3 whitespace-normal rounded-lg border-2 bg-surface px-4 py-3 text-left text-[15px] text-foreground", tone)}>
               <span className="w-5 shrink-0 font-semibold text-muted-foreground">{c.key}</span>
               <span className="flex-1">{c.text}</span>
               {answered && c.key === q.answer && <Check size={17} className="text-success" />}
-            </button>
+            </Button>
           );
         })}
       </div>
+      {!answered && <Button size="block" disabled={!picked} onClick={submit} className="mt-4">Answer</Button>}
       {answered && (
         <div className="mt-4" role="status">
           <p className={cn("flex items-center gap-2 text-[14px] font-semibold", picked === q.answer ? "text-success" : "text-destructive")}>
