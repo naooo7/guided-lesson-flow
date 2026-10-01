@@ -191,7 +191,7 @@ function SessionScreen() {
             })}
           </div>
             </div>
-          ) : null}
+          )}
         </main>
 
         <div className="sticky bottom-0 -mx-5 mt-6 border-t border-border bg-background/95 px-5 pb-[calc(1rem+env(safe-area-inset-bottom))] pt-3 backdrop-blur-xl sm:-mx-6 sm:px-6">
